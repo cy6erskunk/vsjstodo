@@ -91,7 +91,7 @@ $(function(){
     }
     function saveData() {
         $.ajax({
-            url: 'a.php',
+            url: 'save',
             type: 'POST',
             data: {'data':escape($("#container").html())},
             success: function() {
@@ -105,9 +105,8 @@ $(function(){
     
     function loadSavedData() {
         $.ajax({
-            url: 'a.php',
+            url: 'get',
             type: 'GET',
-            data: {'get':'1'},
             beforeSend: function() {
                     },
             success: function(data) {
