@@ -1,0 +1,25 @@
+<html>
+<head>
+	<script type="text/javascript" src="http://yandex.st/jquery/1.5.1/jquery.min.js"></script>
+	<script type="text/javascript" src="todo.js"></script>
+	<link type="text/css" href="todo.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="message"></div>
+<div id="container">
+</div>
+<button id="add_group">add group</button>
+<button id="save">save</button>
+
+<div id="template" style="display:none;">
+	<div class="do"><span class="status taskUndone">-</span><div class="doDelete">X</div><span class="name">fill in...</span><input class="name_input" type="text" style="display:none;"/></div>
+</div>
+<div id="group_template" style="display:none">
+	<div class="group">
+	<button class="add_new">add</button>
+	<span class="group_name"></span><input class="group_name_input" type="text" style="display:none;"/>
+	<div class="groupDelete">X</div><div class="groupShowHide">_</div>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+#message {
+    position: absolute;
+    left: 1em;
+    top: 1em;
+    z-index: 10;
+    background-color: #fff;
+    padding: 1em;
+    border: 1px solid #000;
+    display: none;
+}
+
+.task,.group {
+    border: 1px solid black;
+    margin: 0.1em;
+    padding: 0.5em;
+    position: relative;
+}
+.task {
+    padding: 0;
+}
+
+.groupDelete,.taskDelete {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1em;
+}
+.groupShowHide {
+    position: absolute;
+    top: 0;
+    right: 1.5em;
+    width: 1em;
+}
+
+.status {
+    padding: 8px 10px;
+    margin-right: 0.5em;
+    display: inline-block;
+    width: 1em;
+    text-align: center;
+}
+
+.name_input {
+    width: 90%;
+}
+
+.success {
+    font-weight: bold;
+    color: #33CF3A;
+}
+
+.error {
+    font-weight: bold;
+    color: #ff0000;
+}
+.toDelete {
+    background-color:#ccc;
+}
+.taskDone {
+    background-color: #80FF9F;
+}
+.taskUndone {
+    background-color: #FF6161;
+}
