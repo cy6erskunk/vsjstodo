@@ -14,6 +14,7 @@ $(function(){
     });
     $("#save").click(function(){
        saveData();
+       alert(dataToJSON($("#container")));
     });
 
     // group operations
@@ -37,7 +38,7 @@ $(function(){
 
     // task operations
     $(".add_new").live('click',function(){
-       $("#template .task").clone().appendTo($(this).parents(".group"));
+       $("#task_template .task").clone().appendTo($(this).parents(".group"));
     });
     $(".taskDelete").live('click',function() {
         askAndDelete($(this).parent('.task'));
@@ -121,6 +122,16 @@ $(function(){
                     $("#message").attr('class','error').show().text("WTF? AJAX?").fadeOut(mft);
                     }
         });
+    }
+
+    function dataToJSON(container) {
+    	var data = '{"groups":[';
+	$(container).find(".group").each(function(){
+		data += '{"name":"' + $(this).find('.group_name').text() + '","id":"' + $(this).attr('id') + '"}'; 	
+		if($(this).next(".group").length) data +=',';
+	});
+	data += ']}';
+	return data;
     }
 
     function generateGroupId() {
