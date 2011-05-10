@@ -1,110 +1,86 @@
 $(function(){
-    // default text for new task
-    empty_text = 'fill in...';
-    // message fadeout timeout
-    mft = 2000;
-    // loda data 
-    loadSavedData();
+    // basic VSJSTODO object
+    var vsjstodo = {
+        // default text for new task
+        defaultTaskText : 'fill in...',
+        // message fadeout timeout
+        mft : 2000,
+        containerId : '#container',
+        groupClass : '.group',
+        taskClass : '.task',
+        groupNameClass : '.group_name',
+        taskNameClass : '.name',
+        taskStatusClass : '.status',
+        taskFinishedClass : '.taskFinished',
+        taskUnfinishedClass : '.taskUnfinished'
 
-    //common buttons click
-    $("#add_group").click(function() {
-        id = generateGroupId();
-       $("#group_template .group").clone().attr('id',id).appendTo("#container");
-       $("#" + id + " span.group_name").text(id);
-    });
-    $("#save").click(function(){
-       saveData();
-       alert(dataToJSON($("#container")));
-    });
-
-    // group operations
-    $(".group_name").live('click',function() {
-        startEditing.call(this);
-    });
-    $(".group_name_input").live('keydown',function(e) {
-        finishEditing.call(this,e);
-    });
-    $(".groupShowHide").live('click',function() {
-        if ($(this).text() == '_') {
-            $(this).text('n').parent().find(".task").hide();
     }
-    else {
-            $(this).text('_').parent().find(".task").show();
-    }
-    });
-    $(".groupDelete").live('click',function() {
-        askAndDelete($(this).parent('.group'));
-    });
 
-    // task operations
-    $(".add_new").live('click',function(){
-       $("#task_template .task").clone().appendTo($(this).parents(".group"));
-    });
-    $(".taskDelete").live('click',function() {
-        askAndDelete($(this).parent('.task'));
-    });
-    $(".status").live('click',function(){
-        toggleTaskStatus.call(this);
-    })
-    $(".name").live('click',function(){
-        startEditing.call(this);
-    });
-    $(".name_input").live('keydown',function(e) {
-        finishEditing.call(this,e);
-    });
+    // Group template
+    vsjstodo.groupTemplate = $("<div class='" + vsjstodo.groupClass.substring(1) + "'>\
+            <button class='add_new'>add</button>\
+            <span class='" + vsjstodo.groupNameClass.substr(1) + "'></span><input class='group_name_input' type='text' style='display:none;'/>\
+            <div class='groupDelete'>X</div><div class='groupShowHide'>_</div>\
+        </div>");
+    // Task template
+    vsjstodo.taskTemplate = $("<div class='" + vsjstodo.taskClass.substring(1) + "'>\
+            <span class='" + vsjstodo.taskStatusClass.substr(1) + " " + vsjstodo.taskUnfinishedClass.substr(1) + "'>-</span>\
+            <div class='taskDelete'>X</div>\
+            <span class='" + vsjstodo.taskNameClass.substr(1) + "'>" + vsjstodo.defaultTaskText + "</span>\
+            <input class='name_input' type='text' style='display:none;'/>\
+        </div>");
 
-    // common functions
-    function startEditing() {
+    // vsjstodo functions
+    vsjstodo.startEditing = function () {
         $(this).hide();
         $(this).next('input').attr('value',$(this).text()).show().focus();
     }
-    
-    function finishEditing(e) {
+    vsjstodo.finishEditing = function (e) {
         if (e.keyCode == '13') {
             $(this).hide();
             if($(this).val() == "")
-                $(this).val(empty_text);
+                $(this).val(vsjstodo.defaultTaskText);
             $(this).prev('span').text($(this).val()).show();
-            saveData();
+            vsjstodo.saveData();
         }
-    else if(e.keyCode == '27') {
-        $(this).hide();
-        $(this).prev('span').show();
+        else if(e.keyCode == '27') {
+            $(this).hide();
+            $(this).prev('span').show();
+        }
     }
-    }
-    function toggleTaskStatus() {
-        if($(this).text() == "+" || $(this).hasClass('taskDone')) {
-            $(this).text("-").removeClass('taskDone').addClass('taskUndone');
+    vsjstodo.toggleTaskStatus = function () {
+        if($(this).text() == "+" || $(this).hasClass(vsjstodo.taskFinishedClass.substring(1))) {
+            $(this).text("-").removeClass(vsjstodo.taskFinishedClass.substr(1)).addClass(vsjstodo.taskUnfinishedClass.substr(1));
         }
         else {
-            $(this).text("+").removeClass('taskUndone').addClass('taskDone');
+            $(this).text("+").removeClass(vsjstodo.taskUnfinishedClass.substr(1)).addClass(vsjstodo.taskFinishedClass.substr(1))
         }
-        saveData();
+        vsjstodo.saveData();
     }
-    function askAndDelete(elem) {
+    vsjstodo.askAndDelete = function (elem) {
         elem.addClass('toDelete');
-        if(confirm('remove' + (elem.find('.group_name').text() ? ' "' + elem.find('.group_name').text() + '"' : '') + '?')) {
-        elem.remove();
-        saveData();
+        if(confirm('remove' + (elem.find(vsjstodo.groupNameClass).text() ? ' "' + elem.find(vsjstodo.groupNameClass).text() + '"' : '') + '?')) {
+            elem.remove();
+            vsjstodo.saveData();
+        }
+        else
+            elem.removeClass('toDelete');
     }
-    else
-        elem.removeClass('toDelete');
-    }
-    function saveData() {
+    vsjstodo.saveData = function () {
         $.ajax({
             url: 'save',
             type: 'POST',
-            data: {'data':escape($("#container").html())},
+            data: {'data':escape($(vsjstodo.containerId).html())},
             success: function() {
-                        $("#message").attr('class','success').show().text("Transferred").fadeOut(mft);
+                        $("#message").attr('class','success').show().text("Transferred").fadeOut(vsjstodo.mft);
                     },
             error: function() {
-                    $("#message").attr('class','error').show().text("WTF? AJAX?").fadeOut(mft);
+                        $("#message").attr('class','error').show().text("WTF? AJAX?").fadeOut(vsjstodo.mft);
                     }
         })
     }
     
-    function loadSavedData() {
+    vsjstodo.loadSavedData = function () {
         $.ajax({
             url: 'get',
             type: 'GET',
@@ -112,30 +88,89 @@ $(function(){
                     },
             success: function(data) {
                         if (data == 'suxx')
-                            $("#message").attr('class','error').show().text("Oops").fadeOut(mft);
+                            $("#message").attr('class','error').show().text("Oops").fadeOut(vsjstodo.mft);
                         else if (data == 'suxx-suxx')
-                            $("#message").attr('class','error').show().text("FfuuUUuuu!!111").fadeOut(mft);
+                            $("#message").attr('class','error').show().text("FfuuUUuuu!!111").fadeOut(vsjstodo.mft);
                         else
-                            $("#container").html(unescape(data));
+                            $(vsjstodo.containerId).html(unescape(data));
                     },
             error: function() {
-                    $("#message").attr('class','error').show().text("WTF? AJAX?").fadeOut(mft);
+                        $("#message").attr('class','error').show().text("WTF? AJAX?").fadeOut(vsjstodo.mft);
                     }
         });
     }
-
-    function dataToJSON(container) {
-    	var data = '{"groups":[';
-	$(container).find(".group").each(function(){
-		data += '{"name":"' + $(this).find('.group_name').text() + '","id":"' + $(this).attr('id') + '"}'; 	
-		if($(this).next(".group").length) data +=',';
-	});
-	data += ']}';
-	return data;
+    vsjstodo.dataToJSON = function (container) {
+        var data = '{"groups":[';
+        $(container).find(vsjstodo.groupClass).each(function(){
+            data += '{"name":"' + $(this).find(vsjstodo.groupNameClass).text() + '","id":"' + $(this).attr('id') + '"';
+            var tasks = $(this).find(vsjstodo.taskClass).length;
+            if (tasks) {
+                data += ',"tasks":[';
+                $(this).find(vsjstodo.taskClass).each(function(){
+                    data += '{"status" : "' + ( $(this).find(vsjstodo.taskStatusClass).hasClass(vsjstodo.taskFinishedClass.substr(1)) ? 1 : 0 ) + '", "text": "' +  $(this).find(vsjstodo.taskNameClass).text() + '"}';
+                    if($(this).next(vsjstodo.taskClass).length) data +=',';
+                });
+                data += ']';
+            }
+            data += '}';  
+            if($(this).next(vsjstodo.groupClass).length) data +=',';
+        });
+        data += ']}';
+        return data;
     }
-
-    function generateGroupId() {
+    vsjstodo.generateGroupId = function () {
         id = 'group-' + Math.ceil(Math.random() * 1000000);
-    return id;
+        return id;
     }
+
+    // loda data 
+    vsjstodo.loadSavedData();
+
+    // Event handlers
+    $("#add_group").click(function() {
+        id = vsjstodo.generateGroupId();
+       vsjstodo.groupTemplate.clone().attr('id',id).appendTo(vsjstodo.containerId);
+       $("#" + id + " span.group_name").text(id);
+    });
+    $("#save").click(function(){
+       vsjstodo.saveData();
+       alert(vsjstodo.dataToJSON($(vsjstodo.containerId)));
+    });
+
+    // group operations
+    $(vsjstodo.groupNameClass).live('click',function() {
+        vsjstodo.startEditing.call(this);
+    });
+    $(".group_name_input").live('keydown',function(e) {
+        vsjstodo.finishEditing.call(this,e);
+    });
+    $(".groupShowHide").live('click',function() {
+        if ($(this).text() == '_') {
+            $(this).text('n').parent().find(vsjstodo.taskClass).hide();
+    }
+    else {
+            $(this).text('_').parent().find(vsjstodo.taskClass).show();
+    }
+    });
+    $(".groupDelete").live('click',function() {
+        vsjstodo.askAndDelete($(this).parent(vsjstodo.groupClass));
+    });
+
+    // task operations
+    $(".add_new").live('click',function(){
+       vsjstodo.taskTemplate.clone().appendTo($(this).parents(vsjstodo.groupClass));
+    });
+    $(".taskDelete").live('click',function() {
+        vsjstodo.askAndDelete($(this).parent(vsjstodo.taskClass));
+    });
+    $(".status").live('click',function(){
+        vsjstodo.toggleTaskStatus.call(this);
+    })
+    $(".name").live('click',function(){
+        vsjstodo.startEditing.call(this);
+    });
+    $(".name_input").live('keydown',function(e) {
+        vsjstodo.finishEditing.call(this,e);
+    });
+
 });

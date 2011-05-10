@@ -56,9 +56,9 @@
 .toDelete {
     background-color:#ccc;
 }
-.taskDone {
+.taskFinished {
     background-color: #80FF9F;
 }
-.taskUndone {
+.taskUnfinished {
     background-color: #FF6161;
 }
