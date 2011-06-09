@@ -1,10 +1,19 @@
+/**
+ * @fileOverview This file includes code for VerySimpleJSTodo widget.
+ * The widget creates a simle list of tasks in the container and allows to 
+ * add/remove tasks, group them, mark as finished/unfinied. It also supports 
+ * task groups and groups coollapsing.
+ * The data is stored on the server-side in plain-text file in JSON format.
+ * Server should support two methods: "get" and "save". Simple implementation
+ * is in a.php file.
+ */
+
 $(function(){
     // basic VSJSTODO object
     var vsjstodo = {
-        // default text for new task
-        defaultTaskText : 'fill in...',
-        // message fadeout timeout
-        mft : 2000,
+        data : '',                           // JSON data
+        defaultTaskText : 'fill in...', // default text for new task
+        mft : 2000,                     // message fadeout timeout
         containerId : '#container',
         groupClass : '.group',
         taskClass : '.task',
@@ -14,22 +23,51 @@ $(function(){
         taskFinishedClass : '.taskFinished',
         taskUnfinishedClass : '.taskUnfinished'
 
-    }
+    };
 
-    // Group template
-    vsjstodo.groupTemplate = $("<div class='" + vsjstodo.groupClass.substring(1) + "'>\
+    /**
+     * Group template
+     * @param id {string} Group id which looks like 'group-123456'
+     * @param name {string} Group name
+     * @param tasks {string} String concatenated from taskTemplate() calls
+     *
+     * @returns {string} html code of the group
+     */
+    vsjstodo.groupTemplate = function(id, name, tasks) {
+        return "<div class='" + vsjstodo.groupClass.substring(1) + "' id='"+ (id||'') +"'>\
             <button class='add_new'>add</button>\
-            <span class='" + vsjstodo.groupNameClass.substr(1) + "'></span><input class='group_name_input' type='text' style='display:none;'/>\
+            <span class='" + vsjstodo.groupNameClass.substr(1) + "'>"+(name||'')+"</span><input class='group_name_input' type='text' style='display:none;'/>\
             <div class='groupDelete'>X</div><div class='groupShowHide'>_</div>\
-        </div>");
-    // Task template
-    vsjstodo.taskTemplate = $("<div class='" + vsjstodo.taskClass.substring(1) + "'>\
-            <span class='" + vsjstodo.taskStatusClass.substr(1) + " " + vsjstodo.taskUnfinishedClass.substr(1) + "'>-</span>\
+            " + ( tasks|| '') + "\
+        </div>";
+    }
+    /** 
+     * Task template
+     * @param status int 1/0
+     * @param text string
+     *
+     * @returns {string} html code of the task
+     */
+    vsjstodo.taskTemplate = function(status, text) {
+        status = Boolean(parseInt(status));
+        return "<div class='" + vsjstodo.taskClass.substring(1) + "'>\
+            <span class='" + vsjstodo.taskStatusClass.substr(1) + " " + ( status ? vsjstodo.taskFinishedClass.substr(1) : vsjstodo.taskUnfinishedClass.substr(1) ) + "'>" + (status? '+' : '-') + "</span>\
             <div class='taskDelete'>X</div>\
-            <span class='" + vsjstodo.taskNameClass.substr(1) + "'>" + vsjstodo.defaultTaskText + "</span>\
+            <span class='" + vsjstodo.taskNameClass.substr(1) + "'>" + ( text || vsjstodo.defaultTaskText ) + "</span>\
             <input class='name_input' type='text' style='display:none;'/>\
-        </div>");
-
+        </div>";
+    }
+    /**
+     * @function Wrapper to generate tasks in iterator function
+     *
+     * @param el {array} Single 'task' array from data object
+     */
+    vsjstodo.taskTemplateWrapper = function(el) {
+        if(el)
+            return vsjstodo.taskTemplate(el.status, el.text);
+        else
+            return '';
+    }
     // vsjstodo functions
     vsjstodo.startEditing = function () {
         $(this).hide();
@@ -67,47 +105,61 @@ $(function(){
             elem.removeClass('toDelete');
     }
     vsjstodo.saveData = function () {
-        $.ajax({
+            $.ajax({
             url: 'save',
             type: 'POST',
-            data: {'data':escape($(vsjstodo.containerId).html())},
-            success: function() {
-                        $("#message").attr('class','success').show().text("Transferred").fadeOut(vsjstodo.mft);
-                    },
-            error: function() {
-                        $("#message").attr('class','error').show().text("WTF? AJAX?").fadeOut(vsjstodo.mft);
-                    }
+            contenType : 'plain/text',
+            data: { 'data': vsjstodo.dataToJSON()},
+            success: function() {vsjstodo.showMessage("Transferred", "success")},
+            error: function() {vsjstodo.showMessage("WTF? saving AJAX?")}
         })
     }
     
-    vsjstodo.loadSavedData = function () {
+    vsjstodo.getData = function () {
         $.ajax({
             url: 'get',
             type: 'GET',
-            beforeSend: function() {
-                    },
+            dataType: 'text',
+            beforeSend: function() {},
             success: function(data) {
-                        if (data == 'suxx')
-                            $("#message").attr('class','error').show().text("Oops").fadeOut(vsjstodo.mft);
-                        else if (data == 'suxx-suxx')
-                            $("#message").attr('class','error').show().text("FfuuUUuuu!!111").fadeOut(vsjstodo.mft);
-                        else
-                            $(vsjstodo.containerId).html(unescape(data));
+                        vsjstodo.parseJSON(data);
                     },
-            error: function() {
-                        $("#message").attr('class','error').show().text("WTF? AJAX?").fadeOut(vsjstodo.mft);
-                    }
+            error: function() {vsjstodo.showMessage("WTF? getting AJAX?")}
         });
     }
-    vsjstodo.dataToJSON = function (container) {
+    vsjstodo.parseJSON = function (data) {
+        /**
+         * @default {}
+         */
+        var data = data || '{"groups":[]}';
+        data = eval( '(' + data + ')' );
+        if (data == 'suxx')
+            vsjstodo.showMessage('Oops - cannot open data file for reading');
+        else if (data == 'suxx-suxx')
+            vsjstodo.showMessage("FfuuUUuuu!!111 - cannot read from data file");
+        else {
+            vsjstodo.data = data;
+            if (vsjstodo.data && vsjstodo.data.groups) {
+                vsjstodo.iterate(vsjstodo.data.groups,vsjstodo.addGroup);
+            }
+        }
+    }
+    vsjstodo.addGroup = function (group) {
+        var tasks = '';
+        if(group.tasks) {
+            vsjstodo.iterate(group.tasks, a = vsjstodo.createAppendToVarFunction(tasks,vsjstodo.taskTemplateWrapper));
+        }
+        $(vsjstodo.groupTemplate(group.id, group.name, a(false))).appendTo(vsjstodo.containerId);
+    }
+    vsjstodo.dataToJSON = function () {
         var data = '{"groups":[';
-        $(container).find(vsjstodo.groupClass).each(function(){
+        $(vsjstodo.containerId).find(vsjstodo.groupClass).each(function(){
             data += '{"name":"' + $(this).find(vsjstodo.groupNameClass).text() + '","id":"' + $(this).attr('id') + '"';
             var tasks = $(this).find(vsjstodo.taskClass).length;
             if (tasks) {
                 data += ',"tasks":[';
                 $(this).find(vsjstodo.taskClass).each(function(){
-                    data += '{"status" : "' + ( $(this).find(vsjstodo.taskStatusClass).hasClass(vsjstodo.taskFinishedClass.substr(1)) ? 1 : 0 ) + '", "text": "' +  $(this).find(vsjstodo.taskNameClass).text() + '"}';
+                    data += '{"status" : "' + ( $(this).find(vsjstodo.taskStatusClass).hasClass(vsjstodo.taskUnfinishedClass.substr(1)) ? 0 : 1 ) + '", "text": "' +  $(this).find(vsjstodo.taskNameClass).text() + '"}';
                     if($(this).next(vsjstodo.taskClass).length) data +=',';
                 });
                 data += ']';
@@ -119,22 +171,31 @@ $(function(){
         return data;
     }
     vsjstodo.generateGroupId = function () {
+        // TODO: check if id already exists
         id = 'group-' + Math.ceil(Math.random() * 1000000);
         return id;
     }
-
-    // loda data 
-    vsjstodo.loadSavedData();
+    vsjstodo.showMessage = function (text, type, elId) {
+        /** 
+         * @default 'error'
+         */
+        type = type || 'error';
+        /**
+         * @default '#message'
+         */
+        elId = elId || '#message';
+        $(elId).attr('class',type).show().text(text).fadeOut(vsjstodo.mft);
+    }
 
     // Event handlers
     $("#add_group").click(function() {
+        
         id = vsjstodo.generateGroupId();
-       vsjstodo.groupTemplate.clone().attr('id',id).appendTo(vsjstodo.containerId);
-       $("#" + id + " span.group_name").text(id);
+        $(vsjstodo.groupTemplate(id)).appendTo(vsjstodo.containerId);
+        $("#" + id + " span.group_name").text(id);
     });
     $("#save").click(function(){
        vsjstodo.saveData();
-       alert(vsjstodo.dataToJSON($(vsjstodo.containerId)));
     });
 
     // group operations
@@ -158,7 +219,7 @@ $(function(){
 
     // task operations
     $(".add_new").live('click',function(){
-       vsjstodo.taskTemplate.clone().appendTo($(this).parents(vsjstodo.groupClass));
+       $(vsjstodo.taskTemplate()).appendTo($(this).parents(vsjstodo.groupClass));
     });
     $(".taskDelete").live('click',function() {
         vsjstodo.askAndDelete($(this).parent(vsjstodo.taskClass));
@@ -173,4 +234,18 @@ $(function(){
         vsjstodo.finishEditing.call(this,e);
     });
 
+    vsjstodo.iterate = function (obj, func) {
+        for(var i=0; i < obj.length; i++) {
+            func(obj[i]);
+        }
+    }
+    vsjstodo.createAppendToVarFunction = function (variable, func) {
+        return function (params) {
+            variable += func(params);
+            return variable;
+        };
+    }
+
+    // loda data 
+    vsjstodo.getData();
 });

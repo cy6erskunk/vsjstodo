@@ -14,7 +14,7 @@
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
     echo "OK";
     $fp = fopen('./data', 'w') or die('-fuuuuu');
-    fwrite($fp, $_POST['data']);
+    fwrite($fp, stripslashes($_POST['data']));
     fclose($fp);
 }
 // GET request with non-empty 'get' param - to read saved data
