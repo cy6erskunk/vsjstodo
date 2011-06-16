@@ -10,62 +10,62 @@
 
 $(function(){
     // basic VSJSTODO object
-    var vsjstodo = {
+    function Vsjstodo() {
         /**
          * String representation of the widget data
          * @type {string}
          */
-        data : '',
+        data = '',
         /**
          * Default text for the new task
          * @type {string}
          */
-        defaultTaskText : 'fill in...',
+        defaultTaskText = 'fill in...',
         /**
          * Messgae fadeout timeour
          * @type {int}
          */
-        mft : 2000,
+        mft = 2000,
         /**
          * JQuery selector to find widget container
          * @type {string}
          */
-        containerId : '#container',
+        containerId = '#container',
         /**
          * JQuery selector for the task group element class
          * @type {string}
          */
-        groupClass : '.group',
+        groupClass = '.group',
         /**
          * JQuery selector for the task element class
          * @type {string}
          */
-        taskClass : '.task',
+        taskClass = '.task',
         /**
          * JQuery selector for the task group name element class
          * @type {string}
          */
-        groupNameClass : '.group_name',
+        groupNameClass = '.group_name',
         /**
          * JQuery selector for the task name element class
          * @type {string}
          */
-        taskNameClass : '.name',
+        taskNameClass = '.name',
         /**
          * JQuery selector for the task status element class
          * @type {string}
          */
-        taskStatusClass : '.status',
+        taskStatusClass = '.status',
         /**
          * JQuery selector for the finished task class
          * @type {string}
          */
-        taskFinishedClass : '.taskFinished',
+        taskFinishedClass = '.taskFinished',
         /**
          * JQuery selector fot the unfinished task class
          * @type {string}
          */
-        taskUnfinishedClass : '.taskUnfinished'
+        taskUnfinishedClass = '.taskUnfinished';
 
     };
 
@@ -79,10 +79,10 @@ $(function(){
      *
      * @returns {!string} html code of the group
      */
-    vsjstodo.groupTemplate = function(id, name, tasks) {
-        return "<div class='" + vsjstodo.groupClass.substring(1) + "' id='" + (id||'') + "'>" + 
+    Vsjstodo.groupTemplate = function(id, name, tasks) {
+        return "<div class='" + Vsjstodo.groupClass.substring(1) + "' id='" + (id||'') + "'>" + 
             "<button class='add_new'>add</button>" +
-            "<span class='" + vsjstodo.groupNameClass.substr(1) + "'>" + (name||'') +
+            "<span class='" + Vsjstodo.groupNameClass.substr(1) + "'>" + (name||'') +
             "</span><input class='group_name_input' type='text' style='display:none;'/>" +
             "<div class='groupDelete'>X</div><div class='groupShowHide'>_</div>" +
             ( tasks|| '') + 
@@ -96,13 +96,13 @@ $(function(){
      *
      * @returns {!string} html code of the task
      */
-    vsjstodo.taskTemplate = function(status, text) {
+    Vsjstodo.taskTemplate = function(status, text) {
         status = Boolean(parseInt(status));
-        return "<div class='" + vsjstodo.taskClass.substring(1) + "'>" +
-            "<span class='" + vsjstodo.taskStatusClass.substr(1) + " " + ( status ? vsjstodo.taskFinishedClass.substr(1) : vsjstodo.taskUnfinishedClass.substr(1) ) + "'>" +
+        return "<div class='" + Vsjstodo.taskClass.substring(1) + "'>" +
+            "<span class='" + Vsjstodo.taskStatusClass.substr(1) + " " + ( status ? Vsjstodo.taskFinishedClass.substr(1) : Vsjstodo.taskUnfinishedClass.substr(1) ) + "'>" +
             (status? '+' : '-') + "</span>" +
             "<div class='taskDelete'>X</div>" +
-            "<span class='" + vsjstodo.taskNameClass.substr(1) + "'>" + ( text || vsjstodo.defaultTaskText ) + "</span>" +
+            "<span class='" + Vsjstodo.taskNameClass.substr(1) + "'>" + ( text || Vsjstodo.defaultTaskText ) + "</span>" +
             "<input class='name_input' type='text' style='display:none;'/>" +
             "</div>";
     }
@@ -113,21 +113,21 @@ $(function(){
      *
      * @returns {!string} html code for the task or empty string
      */
-    vsjstodo.taskTemplateWrapper = function(el) {
+    Vsjstodo.taskTemplateWrapper = function(el) {
         if(el)
-            return vsjstodo.taskTemplate(el.status, el.text);
+            return Vsjstodo.taskTemplate(el.status, el.text);
         else
             return '';
     }
 
     /**
-     * vsjstodo main functions block
+     * Vsjstodo main functions block
      */
     /**
      * Replaces group or task name with input to start editinf
      * @function
      */
-    vsjstodo.startEditing = function() {
+    Vsjstodo.startEditing = function() {
         $(this).hide().next('input').attr('value',$(this).text()).show().focus();
     }
     /**
@@ -135,13 +135,13 @@ $(function(){
      * @function
      * @param e {event} JQuery keydown event
      */
-    vsjstodo.finishEditing = function(e) {
+    Vsjstodo.finishEditing = function(e) {
         if (e.keyCode == '13') {
             $(this).hide();
             if($(this).val() == "")
-                $(this).val(vsjstodo.defaultTaskText);
+                $(this).val(Vsjstodo.defaultTaskText);
             $(this).prev('span').text($(this).val()).show();
-            vsjstodo.saveData();
+            Vsjstodo.saveData();
         }
         else if(e.keyCode == '27') {
             $(this).hide();
@@ -152,25 +152,25 @@ $(function(){
      * Toggles task status ans saves data
      * @function
      */
-    vsjstodo.toggleTaskStatus = function() {
-        if($(this).text() == "+" || $(this).hasClass(vsjstodo.taskFinishedClass.substring(1))) {
-            $(this).text("-").removeClass(vsjstodo.taskFinishedClass.substr(1)).addClass(vsjstodo.taskUnfinishedClass.substr(1));
+    Vsjstodo.toggleTaskStatus = function() {
+        if($(this).text() == "+" || $(this).hasClass(Vsjstodo.taskFinishedClass.substring(1))) {
+            $(this).text("-").removeClass(Vsjstodo.taskFinishedClass.substr(1)).addClass(Vsjstodo.taskUnfinishedClass.substr(1));
         }
         else {
-            $(this).text("+").removeClass(vsjstodo.taskUnfinishedClass.substr(1)).addClass(vsjstodo.taskFinishedClass.substr(1))
+            $(this).text("+").removeClass(Vsjstodo.taskUnfinishedClass.substr(1)).addClass(Vsjstodo.taskFinishedClass.substr(1))
         }
-        vsjstodo.saveData();
+        Vsjstodo.saveData();
     }
     /**
      * Ask confirmation and deletes task or group. Saves data after deletion.
      * @function
      * @param el {element} JQuery element to delete
      */
-    vsjstodo.askAndDelete = function(el) {
+    Vsjstodo.askAndDelete = function(el) {
         elem.addClass('toDelete');
-        if(confirm('remove' + (el.find(vsjstodo.groupNameClass).text() ? ' "' + el.find(vsjstodo.groupNameClass).text() + '"' : '') + '?')) {
+        if(confirm('remove' + (el.find(Vsjstodo.groupNameClass).text() ? ' "' + el.find(Vsjstodo.groupNameClass).text() + '"' : '') + '?')) {
             el.remove();
-            vsjstodo.saveData();
+            Vsjstodo.saveData();
         }
         else
             el.removeClass('toDelete');
@@ -179,29 +179,29 @@ $(function(){
      * Update data locally and sends it to the server
      * @function
      */
-    vsjstodo.saveData = function() {
-        vsjstodo.data = vsjstodo.dataToJSON();
+    Vsjstodo.saveData = function() {
+        Vsjstodo.data = Vsjstodo.dataToJSON();
         $.ajax({
             url: 'save',
             type: 'POST',
             contenType : 'plain/text',
-            data: { 'data': vsjstodo.data},
-            success: function() {vsjstodo.showMessage("Transferred", "success")},
-            error: function() {vsjstodo.showMessage("WTF? saving AJAX?")}
+            data: { 'data': Vsjstodo.data},
+            success: function() {Vsjstodo.showMessage("Transferred", "success")},
+            error: function() {Vsjstodo.showMessage("WTF? saving AJAX?")}
         })
     }
    /**
-    * Retrives data from server and calls vsjstodo.parseJSON(data)
+    * Retrives data from server and calls Vsjstodo.parseJSON(data)
     * @function
     */
-    vsjstodo.getData = function() {
+    Vsjstodo.getData = function() {
         $.ajax({
             url: 'get',
             type: 'GET',
             dataType: 'text',
             beforeSend: function () {},
-            success: function (data) {vsjstodo.parseJSON(data);},
-            error: function () {vsjstodo.showMessage("WTF? getting AJAX?")}
+            success: function (data) {Vsjstodo.parseJSON(data);},
+            error: function () {Vsjstodo.showMessage("WTF? getting AJAX?")}
         });
     }
     /**
@@ -209,20 +209,20 @@ $(function(){
      * @function
      * @param data {string} JSON data from the server
      */
-    vsjstodo.parseJSON = function(data) {
+    Vsjstodo.parseJSON = function(data) {
         /**
          * @default {}
          */
         var data = data || '{"groups":[]}';
         data = eval( '(' + data + ')' );
         if (data == 'suxx')
-            vsjstodo.showMessage('Oops - cannot open data file for reading');
+            Vsjstodo.showMessage('Oops - cannot open data file for reading');
         else if (data == 'suxx-suxx')
-            vsjstodo.showMessage("FfuuUUuuu!!111 - cannot read from data file");
+            Vsjstodo.showMessage("FfuuUUuuu!!111 - cannot read from data file");
         else {
-            vsjstodo.data = data;
-            if (vsjstodo.data && vsjstodo.data.groups) {
-                vsjstodo.iterate(vsjstodo.data.groups,vsjstodo.addGroup);
+            Vsjstodo.data = data;
+            if (Vsjstodo.data && Vsjstodo.data.groups) {
+                Vsjstodo.iterate(Vsjstodo.data.groups,Vsjstodo.addGroup);
             }
         }
     }
@@ -231,33 +231,33 @@ $(function(){
      * @function
      * @param group {object} group object from server JSON
      */
-    vsjstodo.addGroup = function(group) {
+    Vsjstodo.addGroup = function(group) {
         var tasks = '';
         if(group.tasks) {
-            vsjstodo.iterate(group.tasks, a = vsjstodo.createAppendToVarFunction(tasks,vsjstodo.taskTemplateWrapper));
+            Vsjstodo.iterate(group.tasks, a = Vsjstodo.createAppendToVarFunction(tasks,Vsjstodo.taskTemplateWrapper));
         }
-        $(vsjstodo.groupTemplate(group.id, group.name, a(false))).appendTo(vsjstodo.containerId);
+        $(Vsjstodo.groupTemplate(group.id, group.name, a(false))).appendTo(Vsjstodo.containerId);
     }
     /**
      * Parses widget and generates JSON to send to the server
      * @function
      */
-    vsjstodo.dataToJSON = function() {
+    Vsjstodo.dataToJSON = function() {
         var data = '{"groups":[';
-        $(vsjstodo.containerId).find(vsjstodo.groupClass).each(function(){
-            data += '{"name":"' + $(this).find(vsjstodo.groupNameClass).text() + '","id":"' + $(this).attr('id') + '"';
-            var tasks = $(this).find(vsjstodo.taskClass).length;
+        $(Vsjstodo.containerId).find(Vsjstodo.groupClass).each(function(){
+            data += '{"name":"' + $(this).find(Vsjstodo.groupNameClass).text() + '","id":"' + $(this).attr('id') + '"';
+            var tasks = $(this).find(Vsjstodo.taskClass).length;
             if (tasks) {
                 data += ',"tasks":[';
-                $(this).find(vsjstodo.taskClass).each(function(){
-                    data += '{"status" : "' + ( $(this).find(vsjstodo.taskStatusClass).hasClass(vsjstodo.taskUnfinishedClass.substr(1)) ? 0 : 1 ) + 
-                        '", "text": "' +  $(this).find(vsjstodo.taskNameClass).text() + '"}';
-                    if($(this).next(vsjstodo.taskClass).length) data +=',';
+                $(this).find(Vsjstodo.taskClass).each(function(){
+                    data += '{"status" : "' + ( $(this).find(Vsjstodo.taskStatusClass).hasClass(Vsjstodo.taskUnfinishedClass.substr(1)) ? 0 : 1 ) + 
+                        '", "text": "' +  $(this).find(Vsjstodo.taskNameClass).text() + '"}';
+                    if($(this).next(Vsjstodo.taskClass).length) data +=',';
                 });
                 data += ']';
             }
             data += '}';  
-            if($(this).next(vsjstodo.groupClass).length) data +=',';
+            if($(this).next(Vsjstodo.groupClass).length) data +=',';
         });
         data += ']}';
         return data;
@@ -268,7 +268,7 @@ $(function(){
      *
      * @returns id {string} group id like 'group-123456'
      */
-    vsjstodo.generateGroupId = function() {
+    Vsjstodo.generateGroupId = function() {
         // TODO: check if id already exists
         id = 'group-' + Math.ceil(Math.random() * 1000000);
         return id;
@@ -280,7 +280,7 @@ $(function(){
      * @patam type {string} classname to add to the message container, defaults to 'error'
      * @param elId {string} JQuery selector for the message container, defaults to '#message'
      */
-    vsjstodo.showMessage = function(text, type, elId) {
+    Vsjstodo.showMessage = function(text, type, elId) {
         /** 
          * @default 'error'
          */
@@ -289,7 +289,7 @@ $(function(){
          * @default '#message'
          */
         elId = elId || '#message';
-        $(elId).attr('class',type).show().text(text).fadeOut(vsjstodo.mft);
+        $(elId).attr('class',type).show().text(text).fadeOut(Vsjstodo.mft);
     }
 
     /**
@@ -301,8 +301,8 @@ $(function(){
      */
     $("#add_group").click(function() {
         
-        id = vsjstodo.generateGroupId();
-        $(vsjstodo.groupTemplate(id)).appendTo(vsjstodo.containerId);
+        id = Vsjstodo.generateGroupId();
+        $(Vsjstodo.groupTemplate(id)).appendTo(Vsjstodo.containerId);
         $("#" + id + " span.group_name").text(id);
     });
     /**
@@ -310,7 +310,7 @@ $(function(){
      * @event
      */
     $("#save").click(function(){
-       vsjstodo.saveData();
+       Vsjstodo.saveData();
     });
     /**
      * group operation events
@@ -320,8 +320,8 @@ $(function(){
      * @event
      */
     // TODO: append keydown event to the global object to finish editing properly even if input element have lost focus
-    $(vsjstodo.groupNameClass).live('click',function() {
-        vsjstodo.startEditing.call(this);
+    $(Vsjstodo.groupNameClass).live('click',function() {
+        Vsjstodo.startEditing.call(this);
     });
     /**
      * geoup_name_input keydown event - to finish editing group name
@@ -330,7 +330,7 @@ $(function(){
      */
     // TODO: append keydown event to the global object to finish editing properly even if input element have lost focus
     $(".group_name_input").live('keydown',function(e) {
-        vsjstodo.finishEditing.call(this,e);
+        Vsjstodo.finishEditing.call(this,e);
     });
     /**
      * Collspses/shows group
@@ -338,10 +338,10 @@ $(function(){
      */
     $(".groupShowHide").live('click',function() {
         if ($(this).text() == '_') {
-            $(this).text('n').parent().find(vsjstodo.taskClass).hide();
+            $(this).text('n').parent().find(Vsjstodo.taskClass).hide();
         }
         else {
-            $(this).text('_').parent().find(vsjstodo.taskClass).show();
+            $(this).text('_').parent().find(Vsjstodo.taskClass).show();
         }
     });
     /**
@@ -349,7 +349,7 @@ $(function(){
      * @event
      */
     $(".groupDelete").live('click',function() {
-        vsjstodo.askAndDelete($(this).parent(vsjstodo.groupClass));
+        Vsjstodo.askAndDelete($(this).parent(Vsjstodo.groupClass));
     });
 
     /**
@@ -360,35 +360,35 @@ $(function(){
      * @event
      */
     $(".add_new").live('click',function(){
-       $(vsjstodo.taskTemplate()).appendTo($(this).parents(vsjstodo.groupClass));
+       $(Vsjstodo.taskTemplate()).appendTo($(this).parents(Vsjstodo.groupClass));
     });
     /**
      * starts task removal
      * @event
      */
     $(".taskDelete").live('click',function() {
-        vsjstodo.askAndDelete($(this).parent(vsjstodo.taskClass));
+        Vsjstodo.askAndDelete($(this).parent(Vsjstodo.taskClass));
     });
     /**
      * Toggles task status
      * @event
      */
     $(".status").live('click',function(){
-        vsjstodo.toggleTaskStatus.call(this);
+        Vsjstodo.toggleTaskStatus.call(this);
     })
     /**
      * Starts task name editing
      * @event
      */
     $(".name").live('click',function(){
-        vsjstodo.startEditing.call(this);
+        Vsjstodo.startEditing.call(this);
     });
     /**
      * finished task name editing
      * @event
      */
     $(".name_input").live('keydown',function(e) {
-        vsjstodo.finishEditing.call(this,e);
+        Vsjstodo.finishEditing.call(this,e);
     });
     /**
      * helper functions
@@ -399,7 +399,7 @@ $(function(){
      * @param obj {object} Object to iterate
      * @param func {function} function to apply to object elements
      */
-    vsjstodo.iterate = function (obj, func) {
+    Vsjstodo.iterate = function (obj, func) {
         for(var i=0; i < obj.length; i++) {
             func(obj[i]);
         }
@@ -412,7 +412,7 @@ $(function(){
      *
      * @returns {function}
      */
-    vsjstodo.createAppendToVarFunction = function (variable, func) {
+    Vsjstodo.createAppendToVarFunction = function (variable, func) {
         return function (param) {
             variable += func(param);
             return variable;
@@ -421,5 +421,5 @@ $(function(){
     /**
      * load data 
      */
-    vsjstodo.getData();
+    Vsjstodo.getData();
 });
