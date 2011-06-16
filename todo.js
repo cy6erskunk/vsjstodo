@@ -167,7 +167,7 @@ $(function(){
      * @param el {element} JQuery element to delete
      */
     vsjstodo.askAndDelete = function(el) {
-        elem.addClass('toDelete');
+        el.addClass('toDelete');
         if(confirm('remove' + (el.find(vsjstodo.groupNameClass).text() ? ' "' + el.find(vsjstodo.groupNameClass).text() + '"' : '') + '?')) {
             el.remove();
             vsjstodo.saveData();
