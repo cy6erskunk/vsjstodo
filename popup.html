@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="jquery.min.js"></script>
+        <script type="text/javascript" src="defaults.js"></script>
+        <script type="text/javascript" src="script.js"></script>
+        <link rel="stylesheet" href="style.css"/>
+    </head>
+    <body>
+        <input type="button" class="addTask" value="+"/>
+        <input type="button" class="saveData" value="save"/>
+        <input type="button" class="reloadData" value="&#8635;" title="reload data"/>
+        <table class="tasks">
+            <tr class="tasksHeader">
+                <td class="controls">&middot;</td>
+                <td>task</td>
+            </tr>
+        </table>
+        <table class="template">
+            <tr>
+                <td class="controls">
+                    <input type="button" class="moveUp" disabled="yes" value="&uarr;"/>
+                    <input type="button" class="moveDown" disabled="yes" value="&darr;"/>
+                    <input type="button" class="toggleStatus" value="&#x2713;"/>
+                    <input type="button" class="toggleUrgency" value="!"/>
+                    <input type="button" class="removeTask" value="-"/>
+                </td>
+                <td class="task">
+                    <span></span>
+                </td>
+            </tr>
+        </table>
+        <div class="debug"></div>
+    </body>
+</html>
+

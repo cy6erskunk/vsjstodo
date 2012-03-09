@@ -1,0 +1,39 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    background-color: #ccc;
+}
+.tasksHeader td {
+    text-align: center;
+}
+.tasksHeader .controls {
+    width: 160px;
+}
+.tasks {
+    width: 800px;
+    border: 1px solid black;
+    margin: 0;
+    padding: 0;
+}
+.editTask {
+    width: 100%;
+}
+.urgent {
+    background-color: red;
+}
+.taskDone {
+   text-decoration: line-through; 
+}
+
+.template {
+    display:none;
+}
+.debug {
+    display: none;
+    overflow: scroll;
+    width: 700px;
+    height: 200px;
+    border: 1px solid red;
+    margin: 0;
+    padding: 0;
+}
