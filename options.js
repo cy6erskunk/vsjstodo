@@ -4,6 +4,10 @@ $(function () {
      * namespace object XXX is created there and populated with 'defaults' and
      * 'options' (that is defaults extended with localStorage values) 
      * properties
+     *
+     * handlebars templates are used to generate content so templte engine
+     * should be included somewhere before this file
+     * see https://github.com/wycats/handlebars.js/
      */
     if (typeof(XXX) !== 'object') {
         XXX = {};
@@ -23,29 +27,54 @@ $(function () {
      * the one corresponding to the property with boolean true value 
      * becomes checked(or the very first one)
      * Arrays are silently dropped
-     * TODO: use mustache.js, Luke
+     *
+     * TODO: use pre-compiled templates and handlebars-runtime
      */
-    var body = $('body');
+    var body = $('body'),
+        stringSource = "<div><span>{{title}}: <input type='text' id='{{name}}' value='{{value}}'/></div>",
+        radioSource = "<div><span>{{title}}: </span><ul>{{#options}}\
+                <li><label><input type='radio' name='{{../name}}' {{#if checked}}checked='checked'{{/if}}/>{{title}}</label></li>\
+                {{/options}}</ul></div>",
+        stringTemplate = Handlebars.compile(stringSource),
+        radioTemplate = Handlebars.compile(radioSource),
+        data,
+        trueOptionsCounter;
+
     $.each(XXX.options, function (index, value) {
-        console.log(typeof(value.value));
         // generate input
         if (typeof(value.value) === 'string') {
-            body.append("<div><span>" + value.title +
-                ": <input type='text' id='" + index + "' value='" + value.value + "'/></div>");
-            return;
-        }
-        // generate radio buttons
-        // TODO: check if there's no true
-        // TODO: check if there's more than one true
-        if (typeof(value.value === 'object')) {
-            var html = "<div><span>" + value.title + "</span>";
+            data = {
+                title : value.title,
+                name : index,
+                value : value.value
+            };
+            body.append(stringTemplate(data));
+        } else if (typeof(value.value === 'object')) {
+            // generate radio buttons
+            // TODO: check if there's no true
+            // TODO: check if there's more than one true
+            trueOptionsCounter = 0;
+            data = {
+                title : value.title,
+                name : index
+            };
+
+            data.options = [];
             ($.each(value.value, function (innerIndex, innerValue) {
-                html = html + "<label><input type='radio' name='" + 
-                    index + "' " + (innerValue ? "checked='checked'" : "") + "/>" +
-                    innerIndex + "</label>";
+                if (innerValue) {
+                    trueOptionsCounter++;
+                }
+                data.options.push({
+                    title : innerIndex,
+                    // if there's already option enabled set others to false
+                    checked : (trueOptionsCounter > 1 ? false : innerValue)
+                });
             }));
-            html = html + "</div>";
-            body.append(html);
+            // check if all options are disabled and enable first one
+            if (trueOptionsCounter === 0) {
+                data.options[1].checked = true;
+            }
+            body.append(radioTemplate(data));
         }
     });
 });
