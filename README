@@ -1,5 +1,1 @@
-Simple Task Management javascript widget.
-It may be added to any web-page by defining container to show contents in.
-Server-side includes plain-text file to store data in JSON and two methods:
-/get (GET request) and /save (POST request) to store and get data.
-Sources include very simple php script implementing this backend.
+Simple Task Management chrome extension.
